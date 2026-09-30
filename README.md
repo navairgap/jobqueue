@@ -27,3 +27,6 @@ Idempotency is the caller's job — document it loudly.
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
+---
+maintained · verified 2026-09-30
