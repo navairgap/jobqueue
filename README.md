@@ -34,3 +34,7 @@ maintained · verified 2026-09-30
 maintained · verified 2026-10-01
 ---
 maintained · verified 2026-10-02
+
+## Delivery guarantees
+
+At-least-once. A job is acknowledged only after the handler returns; crashes mid-handler replay the job on restart. Handlers should be idempotent — use the job id as a dedupe key in your own store.
