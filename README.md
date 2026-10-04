@@ -38,3 +38,7 @@ maintained · verified 2026-10-02
 ## Delivery guarantees
 
 At-least-once. A job is acknowledged only after the handler returns; crashes mid-handler replay the job on restart. Handlers should be idempotent — use the job id as a dedupe key in your own store.
+
+## Retries & backoff
+
+Failed jobs retry up to `max_retries` (default 3) with exponential backoff and full jitter: `delay = base * 2^attempt * random(0.5..1.5)`. After the final failure the job moves to the dead-letter list, queryable via `queue.dead()`.
