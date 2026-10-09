@@ -42,3 +42,8 @@ At-least-once. A job is acknowledged only after the handler returns; crashes mid
 ## Retries & backoff
 
 Failed jobs retry up to `max_retries` (default 3) with exponential backoff and full jitter: `delay = base * 2^attempt * random(0.5..1.5)`. After the final failure the job moves to the dead-letter list, queryable via `queue.dead()`.
+
+
+## Comparison
+
+vs celery: no broker, no worker fleet — an in-process queue for one machine. vs a database table with a polling loop: real wakeups, no spin. when you outgrow it, migrate to celery; the job shape carries over.
