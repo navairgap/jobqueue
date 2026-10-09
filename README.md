@@ -60,3 +60,11 @@ the suite covers ordering, retry backoff, dead-lettering, and shutdown draining.
 ## Comparison
 
 vs celery: no broker, no worker fleet — an in-process queue for one machine. vs a database table with a polling loop: real wakeups, no spin. when you outgrow it, migrate to celery; the job shape carries over.
+
+## Testing
+
+```bash
+python3 -m unittest discover -s jobqueue -v
+```
+
+the suite covers ordering, retry backoff, dead-lettering, and shutdown draining. no network, no docker, no excuses.
