@@ -68,3 +68,7 @@ python3 -m unittest discover -s jobqueue -v
 ```
 
 the suite covers ordering, retry backoff, dead-lettering, and shutdown draining. no network, no docker, no excuses.
+
+## Getting help
+
+issues welcome with: python version, a minimal repro script, and whether the job handler raises. queue dumps (`queue.debug()`) attached as files help enormously.
