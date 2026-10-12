@@ -76,3 +76,7 @@ issues welcome with: python version, a minimal repro script, and whether the job
 ## Getting help
 
 issues welcome with: python version, a minimal repro script, and whether the job handler raises. queue dumps (`queue.debug()`) attached as files help enormously.
+
+## Shutdown behavior
+
+SIGTERM: stop accepting, drain in-flight, persist pending, exit 0. SIGKILL mid-handler: the job replays on restart — handlers must be idempotent.
