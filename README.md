@@ -84,3 +84,7 @@ SIGTERM: stop accepting, drain in-flight, persist pending, exit 0. SIGKILL mid-h
 ## Error messages
 
 dead letters carry a reason: `handler_panic`, `max_retries`, `timeout`. `queue.dead()` returns them with the last error attached — requeue by pushing a copy with a fresh id.
+
+## Environment variables
+
+the queue reads nothing from the environment by design — worker count, retries, and backoff are constructor arguments. if you need env-driven config, load it in your own main and pass values in.
