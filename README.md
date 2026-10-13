@@ -80,3 +80,7 @@ issues welcome with: python version, a minimal repro script, and whether the job
 ## Shutdown behavior
 
 SIGTERM: stop accepting, drain in-flight, persist pending, exit 0. SIGKILL mid-handler: the job replays on restart — handlers must be idempotent.
+
+## Error messages
+
+dead letters carry a reason: `handler_panic`, `max_retries`, `timeout`. `queue.dead()` returns them with the last error attached — requeue by pushing a copy with a fresh id.
