@@ -88,3 +88,7 @@ dead letters carry a reason: `handler_panic`, `max_retries`, `timeout`. `queue.d
 ## Environment variables
 
 the queue reads nothing from the environment by design — worker count, retries, and backoff are constructor arguments. if you need env-driven config, load it in your own main and pass values in.
+
+## Common tasks
+
+enqueue a batch: `for id in ids { queue.push(Job::new(id)) }`. inspect dead letters: iterate `queue.dead()`. drain on demand: `queue.drain()` blocks until empty — used in graceful shutdown.
