@@ -92,3 +92,7 @@ the queue reads nothing from the environment by design — worker count, retries
 ## Common tasks
 
 enqueue a batch: `for id in ids { queue.push(Job::new(id)) }`. inspect dead letters: iterate `queue.dead()`. drain on demand: `queue.drain()` blocks until empty — used in graceful shutdown.
+
+## Design goals
+
+in-process, no broker, no daemon. when a job outgrows one machine, the queue is the wrong tool — graduate to a real broker and keep the handler code unchanged.
