@@ -96,3 +96,7 @@ enqueue a batch: `for id in ids { queue.push(Job::new(id)) }`. inspect dead lett
 ## Design goals
 
 in-process, no broker, no daemon. when a job outgrows one machine, the queue is the wrong tool — graduate to a real broker and keep the handler code unchanged.
+
+## History
+
+the queue was extracted from a telegram bot that needed retries and got a homemade scheduler instead. the bot is gone; the queue earned its own repo by being the only part without regret.
