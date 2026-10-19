@@ -1,102 +1,41 @@
 # jobqueue
 
-A Redis-backed job queue in Python with retries and dead letters
+A planned Python job queue focused on explicit delivery and retry semantics.
 
-> 🚧 **Status: planning** — architecture and README first, code next.
+> **Status: design stage.** This repository currently contains documentation only; there is no queue implementation or Redis integration yet.
 
-## Why
+## Goal
 
-Background jobs are where reliability goes to die. jobqueue is a small, well-tested queue library: at-least-once delivery, exponential backoff, dead-letter queues, and graceful worker shutdown.
+Explore reliable background work with a small API and clearly documented failure behavior.
 
-## Planned features
+## Proposed contract
 
-- enqueue/dequeue with at-least-once semantics
-- Retries with exponential backoff + jitter
-- Dead-letter queue with manual replay tool
-- Graceful shutdown: finish in-flight jobs, reject new ones
-- Full pytest suite with fakeredis (no Redis needed for tests)
+- Jobs have a stable identifier, payload, attempt count, and creation timestamp.
+- A worker acknowledges a job only after its handler succeeds.
+- A failed job is retried according to a configurable policy.
+- Jobs that exceed the retry limit are moved to a dead-letter collection for inspection.
+- Shutdown stops new work and gives in-flight handlers a bounded time to finish.
 
-## Stack
+## Important semantics
 
-`python` `redis` `pytest`
+- Delivery is intended to be **at least once**, so a handler may run more than once.
+- Applications must make side effects idempotent or deduplicate by job ID.
+- Retry delays should use bounded exponential backoff with jitter.
+- The API must distinguish handler failures from queue/storage failures.
+- Redis behavior, persistence guarantees, and concurrency limits must be specified before claiming production readiness.
 
-## Notes
+## Planned milestones
 
-Idempotency is the caller's job — document it loudly.
+- [ ] Implement a pure in-memory queue contract and tests.
+- [ ] Add retry policy tests with an injectable clock/random source.
+- [ ] Define shutdown and in-flight job behavior.
+- [ ] Add a Redis backend with integration tests.
+- [ ] Document observability and dead-letter replay safeguards.
+
+## Testing
+
+Core tests should run without a live Redis server. Backend integration tests can use an isolated test instance and should be clearly separated from unit tests.
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
-
----
-maintained · verified 2026-09-30
----
-maintained · verified 2026-10-01
----
-maintained · verified 2026-10-02
-
-## Delivery guarantees
-
-At-least-once. A job is acknowledged only after the handler returns; crashes mid-handler replay the job on restart. Handlers should be idempotent — use the job id as a dedupe key in your own store.
-
-## Retries & backoff
-
-Failed jobs retry up to `max_retries` (default 3) with exponential backoff and full jitter: `delay = base * 2^attempt * random(0.5..1.5)`. After the final failure the job moves to the dead-letter list, queryable via `queue.dead()`.
-
-
-## Comparison
-
-vs celery: no broker, no worker fleet — an in-process queue for one machine. vs a database table with a polling loop: real wakeups, no spin. when you outgrow it, migrate to celery; the job shape carries over.
-
-
-## Testing
-
-```bash
-python3 -m unittest discover -s jobqueue -v
-```
-
-the suite covers ordering, retry backoff, dead-lettering, and shutdown draining. no network, no docker, no excuses.
-
-## Comparison
-
-vs celery: no broker, no worker fleet — an in-process queue for one machine. vs a database table with a polling loop: real wakeups, no spin. when you outgrow it, migrate to celery; the job shape carries over.
-
-## Testing
-
-```bash
-python3 -m unittest discover -s jobqueue -v
-```
-
-the suite covers ordering, retry backoff, dead-lettering, and shutdown draining. no network, no docker, no excuses.
-
-## Getting help
-
-issues welcome with: python version, a minimal repro script, and whether the job handler raises. queue dumps (`queue.debug()`) attached as files help enormously.
-
-## Getting help
-
-issues welcome with: python version, a minimal repro script, and whether the job handler raises. queue dumps (`queue.debug()`) attached as files help enormously.
-
-## Shutdown behavior
-
-SIGTERM: stop accepting, drain in-flight, persist pending, exit 0. SIGKILL mid-handler: the job replays on restart — handlers must be idempotent.
-
-## Error messages
-
-dead letters carry a reason: `handler_panic`, `max_retries`, `timeout`. `queue.dead()` returns them with the last error attached — requeue by pushing a copy with a fresh id.
-
-## Environment variables
-
-the queue reads nothing from the environment by design — worker count, retries, and backoff are constructor arguments. if you need env-driven config, load it in your own main and pass values in.
-
-## Common tasks
-
-enqueue a batch: `for id in ids { queue.push(Job::new(id)) }`. inspect dead letters: iterate `queue.dead()`. drain on demand: `queue.drain()` blocks until empty — used in graceful shutdown.
-
-## Design goals
-
-in-process, no broker, no daemon. when a job outgrows one machine, the queue is the wrong tool — graduate to a real broker and keep the handler code unchanged.
-
-## History
-
-the queue was extracted from a telegram bot that needed retries and got a homemade scheduler instead. the bot is gone; the queue earned its own repo by being the only part without regret.
+MIT. See [LICENSE](LICENSE).
