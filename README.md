@@ -39,3 +39,8 @@ Core tests should run without a live Redis server. Backend integration tests can
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+
+## Delivery semantics
+
+At-least-once delivery can repeat handler side effects, so recommend idempotency keys for external operations. Do not acknowledge jobs before successful completion. Document retryable errors, attempt limits, backoff caps, dead-letter handling, and bounded graceful shutdown.
