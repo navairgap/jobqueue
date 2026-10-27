@@ -9,6 +9,10 @@ This document defines predictable retry behavior for a future jobqueue implement
 - Delivery is at least once. A handler may run more than once, so side effects should be idempotent or deduplicated by job ID.
 - After the configured maximum number of attempts, move the job to a dead-letter collection with its last error and timestamps. Do not retry indefinitely.
 
+## Attempt numbering
+
+Attempt 1 is the first handler invocation; `max_attempts` includes that initial attempt rather than counting retries only. A value of 1 therefore means no retry after the first failure. Persist the attempt count alongside the job so a worker restart cannot reset the retry budget. Tests should cover `max_attempts = 1`, the final allowed retry, and dead-letter transfer immediately after the final failed attempt.
+
 ## Backoff
 
 For attempt number (n), use capped exponential backoff:
