@@ -21,6 +21,10 @@ For attempt number (n), use capped exponential backoff:
 
 Apply bounded jitter to avoid synchronized retry waves. Inject the clock and random source so tests do not sleep or depend on nondeterministic timing.
 
+## Idempotency boundary
+
+The queue can prevent some duplicate scheduling, but it cannot promise exactly-once side effects across an arbitrary external API and a process crash. Use a stable job ID as an idempotency key with downstream services where supported. Document retention for deduplication records and test the crash window where a handler succeeds but acknowledgement fails; the expected recovery is a repeat delivery that the handler can safely recognize.
+
 ## Shutdown
 
 Stop accepting new work first. Give in-flight handlers a bounded grace period, then leave unacknowledged jobs recoverable according to the backend's documented lease or visibility timeout.
