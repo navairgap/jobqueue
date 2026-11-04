@@ -33,7 +33,10 @@ class Job:
 def _finite_number(value: object, label: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{label} must be a finite number")
-    converted = float(value)
+    try:
+        converted = float(value)
+    except (OverflowError, ValueError) as exc:
+        raise ValueError(f"{label} must be a finite number") from exc
     if not math.isfinite(converted):
         raise ValueError(f"{label} must be a finite number")
     return converted
