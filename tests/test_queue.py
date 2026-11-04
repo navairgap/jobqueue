@@ -39,6 +39,11 @@ class InMemoryQueueTests(unittest.TestCase):
         with self.assertRaises(DuplicateJob):
             queue.enqueue("one", {"value": 2}, now=1)
 
+    def test_extremely_large_integer_timestamp_is_rejected_cleanly(self):
+        queue = InMemoryQueue()
+        with self.assertRaisesRegex(ValueError, "now must be a finite number"):
+            queue.enqueue("huge-time", {}, now=10 ** 10000)
+
     def test_mutating_returned_job_does_not_mutate_queue_state(self):
         queue = InMemoryQueue()
         returned = queue.enqueue("copy", {"items": [1]}, now=0)
