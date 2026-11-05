@@ -50,6 +50,25 @@ class InMemoryQueueTests(unittest.TestCase):
         returned.payload["items"].append(2)
         self.assertEqual(queue.get("copy").payload, {"items": [1]})
 
+    def test_boolean_and_non_integer_values_cannot_impersonate_lease_tokens(self):
+        invalid_tokens = (True, 1.0, "1", 0, -1)
+
+        ack_queue = InMemoryQueue()
+        ack_queue.enqueue("ack-job", {}, now=0)
+        acked = ack_queue.claim("worker", now=0, lease_seconds=10)
+        for token in invalid_tokens:
+            with self.subTest(operation="ack", token=token):
+                self.assertFalse(ack_queue.ack("ack-job", token, now=1))
+        self.assertTrue(ack_queue.ack("ack-job", acked.lease_token, now=1))
+
+        fail_queue = InMemoryQueue()
+        fail_queue.enqueue("fail-job", {}, now=0, max_attempts=1)
+        failed = fail_queue.claim("worker", now=0, lease_seconds=10)
+        for token in invalid_tokens:
+            with self.subTest(operation="fail", token=token):
+                self.assertIsNone(fail_queue.fail("fail-job", token, now=1))
+        self.assertEqual(fail_queue.fail("fail-job", failed.lease_token, now=1), "dead")
+
 
 if __name__ == "__main__":
     unittest.main()

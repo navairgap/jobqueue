@@ -112,6 +112,8 @@ class InMemoryQueue:
             return deepcopy(job)
 
     def ack(self, job_id: str, lease_token: int, *, now: float) -> bool:
+        if isinstance(lease_token, bool) or not isinstance(lease_token, int) or lease_token < 1:
+            return False
         timestamp = _finite_number(now, "now")
         with self._lock:
             job = self._jobs.get(job_id)
@@ -130,6 +132,8 @@ class InMemoryQueue:
         now: float,
         retry_delay: float = 0,
     ) -> str | None:
+        if isinstance(lease_token, bool) or not isinstance(lease_token, int) or lease_token < 1:
+            return None
         timestamp = _finite_number(now, "now")
         delay = _finite_number(retry_delay, "retry_delay")
         if delay < 0:
