@@ -70,5 +70,20 @@ class InMemoryQueueTests(unittest.TestCase):
         self.assertEqual(fail_queue.fail("fail-job", failed.lease_token, now=1), "dead")
 
 
+
+    def test_expired_final_attempt_moves_directly_to_dead_letters(self):
+        queue = InMemoryQueue()
+        queue.enqueue("last-attempt", {"task": "process"}, now=0, max_attempts=1)
+        claimed = queue.claim("worker-a", now=0, lease_seconds=2)
+
+        self.assertIsNotNone(claimed)
+        self.assertIsNone(queue.claim("worker-b", now=2, lease_seconds=5))
+        job = queue.get("last-attempt")
+        self.assertEqual(job.state, "dead")
+        self.assertIsNone(job.lease_owner)
+        self.assertIsNone(job.lease_token)
+        self.assertIsNone(job.lease_until)
+        self.assertEqual([item.job_id for item in queue.dead_letters()], ["last-attempt"])
+
 if __name__ == "__main__":
     unittest.main()
